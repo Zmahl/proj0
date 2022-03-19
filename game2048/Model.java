@@ -106,6 +106,15 @@ public class Model extends Observable {
      *    value, then the leading two tiles in the direction of motion merge,
      *    and the trailing tile does not.
      * */
+
+    private int findHighestRowEmpty(int col) {
+        int row = 3;
+        for (int c = 0; c < board.size(); c++){
+
+        }
+        return row;
+    }
+
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
@@ -113,6 +122,16 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+
+        for (int c = 0; c < board.size(); c++){
+            for (int r = 0; r < board.size(); r++){
+                Tile t = board.tile(c, r);
+                if (board.tile(c, r) != null) {
+                    board.move(c, 3, t);
+                    changed = true;
+                }
+            }
+        }
 
         checkGameOver();
         if (changed) {
@@ -126,24 +145,33 @@ public class Model extends Observable {
         int row = t.row();
         int col = t.col();
 
-        for (int i = -1; i <= 1; i++){
+        /** Checks the grid box to the left and right of the current box */
+        for (int i = -1; i <= 1; i++) {
             int col_inc = col + i;
-            System.out.println(col_inc);
-            if (col_inc < 0 || col_inc >= b.size() || col_inc == 0){
+
+            if (col_inc < 0 || col_inc >= b.size()) {
                 continue;
             }
-            for (int j = -1; j < col + 1; j++){
-                int row_inc = row + j;
-                System.out.println(row_inc);
-                if (row_inc < 0 || row_inc >= b.size() || row_inc == 0){
-                    continue;
-                }
-                System.out.print("val " + val);
-                System.out.println(" b.tile " + b.tile(row_inc, col_inc).value());
-                if (b.tile(row_inc, col_inc).value() == val){
-                    return true;
+
+            if (col_inc != col && b.tile(row, col_inc).value() == val){
+                return true;
+            }
+
+            /** When the counter increments to the current box, check the upper and lower box */
+            if (col_inc == col) {
+                for (int j = -1; j <= 1; j++){
+                    int row_inc = row + j;
+
+                    if (row_inc < 0 || row_inc == row || row_inc >= b.size()){
+                        continue;
+                    }
+
+                    if (b.tile(row_inc, col_inc).value() == val) {
+                        return true;
+                    }
                 }
             }
+
         }
 
         return false;
