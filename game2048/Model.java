@@ -107,12 +107,35 @@ public class Model extends Observable {
      *    and the trailing tile does not.
      * */
 
+    /** Returns the highest empty row of the column */
     private int findHighestRowEmpty(int col) {
-        int row = 3;
-        for (int c = 0; c < board.size(); c++){
 
+        for (int row = 3; row > 0; row--) {
+            Tile t = board.tile(col, row);
+            if (t == null) {
+                return row;
+            }
         }
-        return row;
+        return 0;
+    }
+
+    private void checkMerge(Tile t){
+        int row_check = t.row() + 1;
+        int col_check = t.col();
+        Tile one_up = board.tile(col_check, row_check + 1);
+
+        if (one_up.value() == t.value()){
+            t.merge(t.col(), t.row(), one_up);
+        }
+    }
+
+    /** Helper function for shifting each row up */
+    public void shiftRowUp(Tile t, int col, int row, boolean move_flag) {
+        if (move_flag) {
+            board.move(col, row, t);
+        }
+
+        checkMerge(t);
     }
 
     public boolean tilt(Side side) {
@@ -124,12 +147,20 @@ public class Model extends Observable {
         // changed local variable to true.
 
         for (int c = 0; c < board.size(); c++){
-            for (int r = 0; r < board.size(); r++){
-                Tile t = board.tile(c, r);
-                if (board.tile(c, r) != null) {
-                    board.move(c, 3, t);
-                    changed = true;
+            for (int r = board.size() - 1; r >= 0; r--){
+                boolean move_flag = false;
+                int highest_empty_row = findHighestRowEmpty(c);
+
+                //If the current row is higher than the highest empty row, just pass
+                if (r >= highest_empty_row) {
+                    continue;
                 }
+                // Find the tile at this coordinate, if it is not empty, move it to the highest empty space
+                Tile t = board.tile(c, r);
+                if (t != null) {
+                    shiftRowUp(t, c, highest_empty_row, move_flag);
+                }
+                changed = true;
             }
         }
 
